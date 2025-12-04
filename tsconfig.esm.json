@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./lib/esm",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "emitDeclarationOnly": false,
+    "module": "ESNext"
+  },
+  "include": [
+    "src/**/*",
+    "src/types/global.d.ts"
+  ]
+}

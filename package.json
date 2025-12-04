@@ -1,0 +1,64 @@
+{
+  "name": "queqiao-node-sdk",
+  "version": "0.0.1-beta.3",
+  "description": "queqiao node sdk for manage connection with queqiao server",
+  "type": "module",
+  "main": "lib/cjs/index.js",
+  "module": "lib/esm/index.js",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./lib/types/index.d.ts",
+        "default": "./lib/esm/index.js"
+      },
+      "require": {
+        "types": "./lib/types/index.d.ts",
+        "default": "./lib/cjs/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "build": "pnpm run clean && pnpm run build:esm && pnpm run build:cjs && pnpm run copy-types",
+    "build:esm": "tsc --project tsconfig.esm.json",
+    "build:cjs": "tsc --project tsconfig.cjs.json",
+    "clean": "rimraf dist",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "test": "jest",
+    "prepublishOnly": "pnpm run build && pnpm test",
+    "format": "prettier --write ./src",
+    "prepare": "husky install",
+    "copy-types": "copyfiles -u 1 \"src/**/*.d.ts\" lib/esm && copyfiles -u 1 \"src/**/*.d.ts\" lib/cjs"
+  },
+  "keywords": [],
+  "author": "erzaozi",
+  "license": "MIT",
+  "dependencies": {
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^12.3.0",
+    "@rollup/rollup-linux-x64-gnu": "^4.53.3",
+    "@types/jest": "^30.0.0",
+    "@types/ws": "^8.18.1",
+    "@typescript-eslint/eslint-plugin": "^8.48.0",
+    "@typescript-eslint/parser": "^8.48.0",
+    "copyfiles": "^2.4.1",
+    "eslint": "^9.39.1",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-import": "^2.32.0",
+    "husky": "^9.1.7",
+    "jest": "^30.2.0",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.7.1",
+    "rimraf": "^6.1.2",
+    "rollup": "^4.53.3",
+    "rollup-plugin-dts": "^6.3.0",
+    "ts-jest": "^29.4.5",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.48.1"
+  }
+}
