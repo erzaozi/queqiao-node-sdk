@@ -1,12 +1,12 @@
 import WebSocket from 'ws';
 
-import { addResponse } from '../event';
+import { addResponse } from '../event/index.js';
 
 import type { Entity } from '../types';
 import type { SendActionbar } from '../types/api/sendActionbar';
 import type { Response } from '../types/event';
 
-export async function send_actionbar(
+export async function sendActionbar(
   ws: WebSocket,
   message: Entity.TextComponent[],
 ): Promise<Response> {

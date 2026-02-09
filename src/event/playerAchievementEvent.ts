@@ -1,8 +1,8 @@
 import WebSocket from 'ws';
 
-import { BaseEvent } from './baseEvent';
+import { BaseEvent } from './baseEvent.js';
 import { PlayerAchievementEventImpl } from '../types/event';
-import QueQiao from '../websocket/queqiao';
+import QueQiao from '../websocket/queqiao.js';
 
 import type { Entity } from '../types';
 
@@ -11,8 +11,7 @@ type Achievement = Entity.Achievement;
 
 export class PlayerAchievementEvent
   extends BaseEvent
-  implements PlayerAchievementEventImpl
-{
+  implements PlayerAchievementEventImpl {
   override event_name: 'PlayerAchievementEvent' =
     'PlayerAchievementEvent' as const;
   override post_type: 'notice' = 'notice' as const;

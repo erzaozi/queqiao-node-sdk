@@ -1,8 +1,8 @@
 import WebSocket from 'ws';
 
-import { BaseEvent } from './baseEvent';
+import { BaseEvent } from './baseEvent.js';
 import { PlayerQuitEventImpl } from '../types/event';
-import QueQiao from '../websocket/queqiao';
+import QueQiao from '../websocket/queqiao.js';
 
 import type { Entity } from '../types';
 

@@ -1,8 +1,8 @@
 import WebSocket from 'ws';
 
-import QueQiaoServer from './server';
-import api from '../api';
-import { EventEmitter } from './eventEmiter';
+import QueQiaoServer from './server.js';
+import api from '../api/index.js';
+import { EventEmitter } from './eventEmitter.js';
 import {
   PlayerAchievementEvent,
   PlayerChatEvent,
@@ -11,8 +11,9 @@ import {
   PlayerJoinEvent,
   PlayerQuitEvent,
   handleResponse,
-} from '../event';
-import { ServerOptions, ConnectOptions, Api } from '../types';
+} from '../event/index.js';
+import { ServerOptions, ConnectOptions, Api, ConnApi } from '../types';
+import { Entity } from '../types';
 import {
   PlayerAchievementEventImpl,
   PlayerChatEventImpl,
@@ -31,6 +32,7 @@ class QueQiao {
       type: 'inbound' | 'outbound';
       serverName: string;
       ws: WebSocket;
+      api: ConnApi;
     };
   } = {};
 
@@ -43,18 +45,22 @@ class QueQiao {
   constructor(isStartServer: boolean = false, serverOptions?: ServerOptions) {
     this.isStartServer = isStartServer;
     this.serverOptions = {
-      ...serverOptions,
       ...{
         host: '127.0.0.1',
         port: 25564,
         path: '/queqiao',
         authorization: '',
       },
+      ...serverOptions,
     };
     this.wsList = {};
     this.eventEmitter = new EventEmitter();
     this.api = api;
-    this._init();
+    this.init();
+  }
+
+  getConn(serverName: string) {
+    return this.wsList[serverName];
   }
 
   onChat(cb: (e: PlayerChatEvent) => void): () => void {
@@ -112,56 +118,65 @@ class QueQiao {
   async startServer(): Promise<void> {
     if (!this.isStartServer || !this.queQiaoServer) {
       this.isStartServer = true;
-      await this._init();
+      await this.init();
     }
   }
 
-  async connect(options: ConnectOptions, retried = 0): Promise<boolean> {
+  async connect(options: ConnectOptions): Promise<boolean> {
     const maxRetries = options.maxRetries || 3;
     const serverName = options.serverName;
+
     return new Promise((resolve, reject) => {
-      if (retried <= maxRetries) {
-        if (serverName !== '') {
-          if (this.wsList[serverName] === undefined) {
-            const headers = {
-              'X-Self-Name': encodeURIComponent(serverName),
-              ...(options.authorization && {
-                Authorization: `Bearer ${encodeURIComponent(options.authorization)}`,
-              }),
-            };
-
-            const ws = new WebSocket(options.url, { headers });
-            ws.on('open', () => {
-              console.log(
-                `Connected to the server name [${serverName}] Successfully`,
-              );
-              retried = 0;
-              this._add(ws, serverName, 'outbound');
-              resolve(true);
-            });
-
-            ws.on('error', (error) => {
-              console.error(
-                `Server name [${serverName}] outbound connection error:` +
-                error.message,
-              );
-              console.log(`The ${retried + 1} reconnection will be retried...`);
-              ws.removeAllListeners();
-              ws.close();
-              setTimeout(() => {
-                return this.connect(options, retried + 1);
-              }, 5000);
-            });
-          } else {
-            console.error(`Server name [${serverName}] has already existed.`);
-          }
+      const attemptConnect = (retries: number) => {
+        if (retries > maxRetries) {
+          console.error(`Server name [${serverName}] outbound connection failed after ${maxRetries} retries.`);
+          reject(false);
+          return;
         }
-      } else {
-        console.error(
-          `Server name [${serverName}] outbound connection failed.`,
-        );
-        reject(false);
-      }
+
+        if (serverName === '') {
+          reject(new Error('Server name cannot be empty'));
+          return;
+        }
+
+        if (this.wsList[serverName] !== undefined) {
+          console.error(`Server name [${serverName}] has already existed.`);
+          resolve(false); // Or reject? Original logic just logged error but promise hung? No, original had logic error. Let's resolve false if exists.
+          return;
+        }
+
+        const headers = {
+          'X-Self-Name': encodeURIComponent(serverName),
+          ...(options.authorization && {
+            'Authorization': `Bearer ${encodeURIComponent(options.authorization)}`,
+          }),
+        };
+
+        const ws = new WebSocket(options.url, { headers });
+
+        ws.on('open', () => {
+          console.log(`Connected to the server name [${serverName}] Successfully`);
+          this.addConnection(ws, serverName, 'outbound');
+          resolve(true);
+        });
+
+        ws.on('error', (error) => {
+          console.error(`Server name [${serverName}] outbound connection error: ${error.message}`);
+          console.log(`The ${retries + 1} reconnection will be retried...`);
+          try {
+            ws.removeAllListeners();
+            ws.close();
+          } catch (e) {
+            // ignore
+          }
+
+          setTimeout(() => {
+            attemptConnect(retries + 1);
+          }, 5000);
+        });
+      };
+
+      attemptConnect(0);
     });
   }
 
@@ -188,7 +203,7 @@ class QueQiao {
     }
   }
 
-  async _init(): Promise<void> {
+  private async init(): Promise<void> {
     if (this.isStartServer) {
       this.queQiaoServer = new QueQiaoServer(
         this.serverOptions.host!,
@@ -201,28 +216,33 @@ class QueQiao {
     }
   }
 
-  _add(ws: WebSocket, serverName: string, type: 'inbound' | 'outbound'): void {
+  public addConnection(ws: WebSocket, serverName: string, type: 'inbound' | 'outbound'): void {
     if (this.wsList[serverName]) {
       throw new Error(`Same server name [${serverName}] is not allowed.`);
-    } else {
-      if (type === 'inbound') {
-        this.wsList[serverName] = {
-          ws,
-          serverName: serverName,
-          type: 'inbound',
-        };
-      } else {
-        this.wsList[serverName] = {
-          ws,
-          serverName: serverName,
-          type: 'outbound',
-        };
-      }
-      this._addEventListener(serverName);
     }
+    this.wsList[serverName] = {
+      ws,
+      serverName,
+      type,
+      api: {
+        broadcast: (message: Entity.TextComponent[]) => this.api.broadcast(ws, message),
+        sendActionbar: (message: Entity.TextComponent[]) => this.api.sendActionbar(ws, message),
+        sendPrivateMsg: (message: Entity.TextComponent[], options: { uuid?: string; nickname?: string }) =>
+          this.api.sendPrivateMsg(ws, message, options),
+        sendRconCommand: (command: string) => this.api.sendRconCommand(ws, command),
+        sendTitle: (options: {
+          title?: Entity.TextComponent;
+          subtitle?: Entity.TextComponent;
+          fade_in?: number;
+          stay?: number;
+          fade_out?: number;
+        }) => this.api.sendTitle(ws, options),
+      }
+    };
+    this.addEventListener(serverName);
   }
 
-  private _addEventListener(serverName: string): void {
+  private addEventListener(serverName: string): void {
     if (this.wsList[serverName]) {
       this.wsList[serverName].ws.on('close', (code, reason) => {
         delete this.wsList[serverName];
@@ -231,73 +251,80 @@ class QueQiao {
         );
       });
       this.wsList[serverName].ws.on('message', (message: string) => {
-        const obj = JSON.parse(message.toString()) as BaseEventImpl | Response;
-        if (this.wsList[serverName]) {
-          let event;
-          if (obj.post_type === 'response') {
-            handleResponse((obj as Response).echo, obj as Response);
-          }
-          if (obj.post_type === 'message') {
-            switch (obj.sub_type) {
-              case 'player_chat':
-                event = new PlayerChatEvent(
-                  this,
-                  this.wsList[serverName].ws,
-                  serverName,
-                  obj as PlayerChatEventImpl,
-                );
-                break;
-              case 'player_command':
-                event = new PlayerCommandEvent(
-                  this,
-                  this.wsList[serverName].ws,
-                  serverName,
-                  obj as PlayerCommandEventImpl,
-                );
-                break;
+        try {
+          const obj = JSON.parse(message.toString()) as BaseEventImpl | Response;
+          if (this.wsList[serverName]) {
+            let event;
+            if (obj.post_type === 'response') {
+              handleResponse((obj as Response).echo, obj as Response);
+            }
+            if (obj.post_type === 'message') {
+              switch (obj.sub_type) {
+                case 'player_chat':
+                  event = new PlayerChatEvent(
+                    this,
+                    this.wsList[serverName].ws,
+                    serverName,
+                    obj as PlayerChatEventImpl,
+                  );
+                  break;
+                case 'player_command':
+                  event = new PlayerCommandEvent(
+                    this,
+                    this.wsList[serverName].ws,
+                    serverName,
+                    obj as PlayerCommandEventImpl,
+                  );
+                  break;
+              }
+            }
+            if (obj.post_type === 'notice') {
+              switch (obj.sub_type) {
+                case 'player_join':
+                  event = new PlayerJoinEvent(
+                    this,
+                    this.wsList[serverName].ws,
+                    serverName,
+                    obj as PlayerJoinEventImpl,
+                  );
+                  break;
+                case 'player_quit':
+                  event = new PlayerQuitEvent(
+                    this,
+                    this.wsList[serverName].ws,
+                    serverName,
+                    obj as PlayerQuitEventImpl,
+                  );
+                  break;
+                case 'player_death':
+                  event = new PlayerDeathEvent(
+                    this,
+                    this.wsList[serverName].ws,
+                    serverName,
+                    obj as PlayerDeathEventImpl,
+                  );
+                  break;
+                case 'player_achievement':
+                  event = new PlayerAchievementEvent(
+                    this,
+                    this.wsList[serverName].ws,
+                    serverName,
+                    obj as PlayerAchievementEventImpl,
+                  );
+                  break;
+              }
+            }
+            if (event) {
+              this.eventEmitter.emit(event.event_name, event);
+            } else if (obj.post_type !== 'response') {
+              // Only log error if it's not a handled response and not a known event
+              // But wait, obj.post_type could be anything.
+              // Let's keep original 'Unknown event' log but make it safer
+              console.warn(`Unknown or unhandled event: ${message.slice(0, 100)}...`);
             }
           }
-          if (obj.post_type === 'notice') {
-            switch (obj.sub_type) {
-              case 'player_join':
-                event = new PlayerJoinEvent(
-                  this,
-                  this.wsList[serverName].ws,
-                  serverName,
-                  obj as PlayerJoinEventImpl,
-                );
-                break;
-              case 'player_quit':
-                event = new PlayerQuitEvent(
-                  this,
-                  this.wsList[serverName].ws,
-                  serverName,
-                  obj as PlayerQuitEventImpl,
-                );
-                break;
-              case 'player_death':
-                event = new PlayerDeathEvent(
-                  this,
-                  this.wsList[serverName].ws,
-                  serverName,
-                  obj as PlayerDeathEventImpl,
-                );
-                break;
-              case 'player_achievement':
-                event = new PlayerAchievementEvent(
-                  this,
-                  this.wsList[serverName].ws,
-                  serverName,
-                  obj as PlayerAchievementEventImpl,
-                );
-                break;
-            }
-          }
-          if (event === null || event === undefined) {
-            console.error(`Unknown event: ${message}`);
-          } else {
-            this.eventEmitter.emit(event.event_name, event);
-          }
+        } catch (e) {
+          console.error('Failed to parse WebSocket message:', e);
         }
       });
     }

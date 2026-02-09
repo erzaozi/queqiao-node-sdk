@@ -1,6 +1,6 @@
 import { WebSocketServer } from 'ws';
 
-import QueQiao from './queqiao';
+import QueQiao from './queqiao.js';
 
 class QueQiaoServer {
   private wsServer: WebSocketServer | null = null;
@@ -74,10 +74,10 @@ class QueQiaoServer {
             ws.on('error', (error) => {
               console.error(
                 `Server name [${serverName}] inbound connection error:` +
-                  error.message,
+                error.message,
               );
             });
-            this.queQiao._add(ws, serverName, 'inbound');
+            this.queQiao.addConnection(ws, serverName, 'inbound');
             console.log(`Server name [${serverName}] connected successfully.`);
           } catch (error) {
             if (error instanceof Error) {

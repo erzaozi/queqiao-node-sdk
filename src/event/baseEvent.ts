@@ -1,10 +1,9 @@
 import WebSocket from 'ws';
 
-import api from '../api';
-import { Response, BaseEventImpl } from '../types/event';
-import QueQiao from '../websocket/queqiao';
+import { BaseEventImpl } from '../types/event';
+import QueQiao from '../websocket/queqiao.js';
 
-import type { Entity } from '../types';
+import type { ConnApi, Entity } from '../types';
 
 export class BaseEvent implements BaseEventImpl {
   server_name: string;
@@ -15,7 +14,7 @@ export class BaseEvent implements BaseEventImpl {
   sub_type: string;
   timestamp: number;
   queQiao: QueQiao;
-  ws: WebSocket;
+  api: ConnApi;
   serverName: string;
   constructor(
     queQiao: QueQiao,
@@ -31,56 +30,20 @@ export class BaseEvent implements BaseEventImpl {
     this.sub_type = obj.sub_type;
     this.timestamp = obj.timestamp;
     this.queQiao = queQiao;
-    this.ws = ws;
+    this.api = {
+      broadcast: (message: Entity.TextComponent[]) => this.queQiao.api.broadcast(ws, message),
+      sendActionbar: (message: Entity.TextComponent[]) => this.queQiao.api.sendActionbar(ws, message),
+      sendPrivateMsg: (message: Entity.TextComponent[], options: { uuid?: string; nickname?: string }) =>
+        this.queQiao.api.sendPrivateMsg(ws, message, options),
+      sendRconCommand: (command: string) => this.queQiao.api.sendRconCommand(ws, command),
+      sendTitle: (options: {
+        title?: Entity.TextComponent;
+        subtitle?: Entity.TextComponent;
+        fade_in?: number;
+        stay?: number;
+        fade_out?: number;
+      }) => this.queQiao.api.sendTitle(ws, options),
+    }
     this.serverName = serverName;
-  }
-  async boardcast(message: Entity.TextComponent[]): Promise<Response> {
-    return await api.boardcast(this.ws, message);
-  }
-  async send_actionbar(message: Entity.TextComponent[]): Promise<Response> {
-    return await api.send_actionbar(this.ws, message);
-  }
-  async sendActionbar(message: Entity.TextComponent[]): Promise<Response> {
-    return await api.send_actionbar(this.ws, message);
-  }
-  async send_private_msg(
-    message: Entity.TextComponent[],
-    options: { uuid?: string; nickname?: string },
-  ): Promise<Response> {
-    return await api.send_private_msg(this.ws, message, options);
-  }
-  async sendPrivateMsg(
-    message: Entity.TextComponent[],
-    options: { uuid?: string; nickname?: string },
-  ): Promise<Response> {
-    return await api.send_private_msg(this.ws, message, options);
-  }
-  async send_rcon_command(command: string): Promise<Response> {
-    return await api.send_rcon_command(this.ws, command);
-  }
-  async sendRconCommand(command: string): Promise<Response> {
-    return await api.send_rcon_command(this.ws, command);
-  }
-  async send_title(options: {
-    title?: Entity.TextComponent;
-    subtitle?: Entity.TextComponent;
-    fade_in?: number;
-    stay?: number;
-    fade_out?: number;
-  }): Promise<Response> {
-    return await api.send_title(this.ws, options);
-  }
-  async sendTitle(options: {
-    title?: Entity.TextComponent;
-    subtitle?: Entity.TextComponent;
-    fade_in?: number;
-    stay?: number;
-    fade_out?: number;
-  }): Promise<Response> {
-    return await api.send_title(this.ws, options);
-  }
-  close(): void {
-    this.queQiao.closeConnect(this.server_name);
-    return;
   }
 }

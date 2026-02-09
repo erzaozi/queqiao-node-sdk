@@ -1,8 +1,8 @@
 import WebSocket from 'ws';
 
-import { BaseEvent } from './baseEvent';
+import { BaseEvent } from './baseEvent.js';
 import { PlayerCommandEventImpl } from '../types/event';
-import QueQiao from '../websocket/queqiao';
+import QueQiao from '../websocket/queqiao.js';
 
 import type { Entity } from '../types';
 
@@ -10,8 +10,7 @@ type Player = Entity.Player;
 
 export class PlayerCommandEvent
   extends BaseEvent
-  implements PlayerCommandEventImpl
-{
+  implements PlayerCommandEventImpl {
   override event_name: 'PlayerCommandEvent' = 'PlayerCommandEvent' as const;
   override post_type: 'message' = 'message' as const;
   override sub_type: 'player_command' = 'player_command' as const;

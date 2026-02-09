@@ -1,11 +1,11 @@
-import { BaseEvent } from './baseEvent';
-import { PlayerAchievementEvent } from './playerAchievementEvent';
-import { PlayerChatEvent } from './playerChatEvent';
-import { PlayerCommandEvent } from './playerCommandEvent';
-import { PlayerDeathEvent } from './playerDeathEvent';
-import { PlayerJoinEvent } from './playerJoinEvent';
-import { PlayerQuitEvent } from './playerQuitEvent';
-import { addResponse, handleResponse } from './response';
+import { BaseEvent } from './baseEvent.js';
+import { PlayerAchievementEvent } from './playerAchievementEvent.js';
+import { PlayerChatEvent } from './playerChatEvent.js';
+import { PlayerCommandEvent } from './playerCommandEvent.js';
+import { PlayerDeathEvent } from './playerDeathEvent.js';
+import { PlayerJoinEvent } from './playerJoinEvent.js';
+import { PlayerQuitEvent } from './playerQuitEvent.js';
+import { addResponse, handleResponse } from './response.js';
 
 export {
   BaseEvent,

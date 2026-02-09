@@ -1,19 +1,15 @@
-import { boardcast } from './boardcast';
-import { send_actionbar } from './sendActionbar';
-import { send_private_msg } from './sendPrivateMsg';
-import { send_rcon_command } from './sendRconCommand';
-import { send_title } from './sendTitle';
+import { broadcast } from './broadcast.js';
+import { sendActionbar } from './sendActionbar.js';
+import { sendPrivateMsg } from './sendPrivateMsg.js';
+import { sendRconCommand } from './sendRconCommand.js';
+import { sendTitle } from './sendTitle.js';
 
 import type { Api } from '../types';
 const api: Api = {
-  boardcast,
-  send_actionbar,
-  sendActionbar: send_actionbar,
-  send_private_msg,
-  sendPrivateMsg: send_private_msg,
-  send_rcon_command,
-  sendRconCommand: send_rcon_command,
-  send_title,
-  sendTitle: send_title,
+  broadcast,
+  sendActionbar,
+  sendPrivateMsg,
+  sendRconCommand,
+  sendTitle,
 };
 export default api;

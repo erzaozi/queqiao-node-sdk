@@ -1,12 +1,12 @@
 import WebSocket from 'ws';
 
-import { addResponse } from '../event';
+import { addResponse } from '../event/index.js';
 
 import type { Entity } from '../types';
 import type { SendPrivateMsg } from '../types/api/sendPrivateMsg';
 import type { Response } from '../types/event';
 
-export async function send_private_msg(
+export async function sendPrivateMsg(
   ws: WebSocket,
   message: Entity.TextComponent[],
   options: { uuid?: string; nickname?: string },

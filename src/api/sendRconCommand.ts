@@ -1,10 +1,10 @@
 import WebSocket from 'ws';
 
-import { addResponse } from '../event';
+import { addResponse } from '../event/index.js';
 
 import type { SendRconCommand } from '../types/api/sendRconCommand';
 import type { Response } from '../types/event';
-export async function send_rcon_command(
+export async function sendRconCommand(
   ws: WebSocket,
   command: string,
 ): Promise<Response> {

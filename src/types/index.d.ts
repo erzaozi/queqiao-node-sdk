@@ -6,9 +6,9 @@ import { Response } from './event/response';
 export namespace Entity {
   type TextComponent =
     | {
-        type: 'text';
-        text: string;
-      }
+      type: 'text';
+      text: string;
+    }
     | any;
   type Player = {
     nickname: string;
@@ -31,13 +31,19 @@ export namespace Entity {
   };
   type Achievement = {
     key: string;
-    text: string;
     display: Display;
+    text: string;
+    translate: Translate;
   };
   type Display = {
-    title: string;
-    description: string;
-    frame: string;
+    title: string | Translate;
+    description: string | Translate;
+    frame: "task" | "goal" | "challenge"
+  };
+  type Translate = {
+    key: string;
+    args: Translate[];
+    text: string;
   };
 }
 
@@ -56,31 +62,14 @@ interface ServerOptions {
 }
 
 interface Api<T = Entity.TextComponent> {
-  boardcast: (ws: WebSocket, message: T[]) => Promise<Response>;
-  send_actionbar: (ws: WebSocket, message: T[]) => Promise<Response>;
+  broadcast: (ws: WebSocket, message: T[]) => Promise<Response>;
   sendActionbar: (ws: WebSocket, message: T[]) => Promise<Response>;
-  send_private_msg: (
-    ws: WebSocket,
-    message: T[],
-    options: { uuid?: string; nickname?: string },
-  ) => Promise<Response>;
   sendPrivateMsg: (
     ws: WebSocket,
     message: T[],
     options: { uuid?: string; nickname?: string },
   ) => Promise<Response>;
-  send_rcon_command: (ws: WebSocket, command: string) => Promise<Response>;
   sendRconCommand: (ws: WebSocket, command: string) => Promise<Response>;
-  send_title: (
-    ws: WebSocket,
-    options: {
-      title?: T;
-      subtitle?: T;
-      fade_in?: number;
-      stay?: number;
-      fade_out?: number;
-    },
-  ) => Promise<Response>;
   sendTitle: (
     ws: WebSocket,
     options: {
@@ -93,4 +82,23 @@ interface Api<T = Entity.TextComponent> {
   ) => Promise<Response>;
 }
 
-export { ConnectOptions, ServerOptions, Api };
+interface ConnApi<T = Entity.TextComponent> {
+  broadcast: (message: T[]) => Promise<Response>;
+  sendActionbar: (message: T[]) => Promise<Response>;
+  sendPrivateMsg: (
+    message: T[],
+    options: { uuid?: string; nickname?: string },
+  ) => Promise<Response>;
+  sendRconCommand: (command: string) => Promise<Response>;
+  sendTitle: (
+    options: {
+      title?: T;
+      subtitle?: T;
+      fade_in?: number;
+      stay?: number;
+      fade_out?: number;
+    },
+  ) => Promise<Response>;
+}
+
+export { ConnectOptions, ServerOptions, Api, ConnApi };

@@ -1,18 +1,17 @@
 import WebSocket from 'ws';
 
-import { BaseEvent } from './baseEvent';
+import { BaseEvent } from './baseEvent.js';
 import { PlayerDeathEventImpl } from '../types/event';
-import QueQiao from '../websocket/queqiao';
+import QueQiao from '../websocket/queqiao.js';
 
 import type { Entity } from '../types';
 
 type Player = Entity.Player;
-type Death = Entity.Death;
+type Death = Entity.Death | Entity.Translate;
 
 export class PlayerDeathEvent
   extends BaseEvent
-  implements PlayerDeathEventImpl
-{
+  implements PlayerDeathEventImpl {
   override event_name: 'PlayerDeathEvent' = 'PlayerDeathEvent' as const;
   override post_type: 'notice' = 'notice' as const;
   override sub_type: 'player_death' = 'player_death' as const;

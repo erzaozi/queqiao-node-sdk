@@ -1,11 +1,11 @@
 import WebSocket from 'ws';
 
-import { addResponse } from '../event';
+import { addResponse } from '../event/index.js';
 
 import type { Entity } from '../types';
 import type { SendTitle } from '../types/api/sendTitle';
 import type { Response } from '../types/event';
-export async function send_title(
+export async function sendTitle(
   ws: WebSocket,
   options: {
     title?: Entity.TextComponent;
@@ -24,7 +24,7 @@ export async function send_title(
     api: 'send_title',
     data: {
       fade_in: fade_in || 20,
-      stay: stay || 20,
+      stay: stay || 70,
       fade_out: fade_out || 20,
       ...(title ? { title } : {}),
       ...(subtitle ? { subtitle } : {}),

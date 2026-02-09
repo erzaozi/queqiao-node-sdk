@@ -5,7 +5,7 @@ import {
   PlayerCommandEvent,
   PlayerAchievementEvent,
   PlayerDeathEvent,
-} from '../event';
+} from '../event/index.js';
 
 type EventMap = {
   PlayerChatEvent: PlayerChatEvent;
