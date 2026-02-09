@@ -18,11 +18,10 @@ export class PlayerChatEvent extends BaseEvent implements PlayerChatEventImpl {
   player: Player;
   constructor(
     queQiao: QueQiao,
-    ws: WebSocket,
     serverName: string,
     obj: PlayerChatEventImpl,
   ) {
-    super(queQiao, ws, serverName, obj);
+    super(queQiao, serverName, obj);
     this.message = obj.message;
     this.message_id = obj.message_id;
     this.raw_message = obj.raw_message;

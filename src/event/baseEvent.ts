@@ -1,9 +1,7 @@
-import WebSocket from 'ws';
-
 import { BaseEventImpl } from '../types/event';
 import QueQiao from '../websocket/queqiao.js';
 
-import type { ConnApi, Entity } from '../types';
+import type { ConnApiImpl, Entity } from '../types';
 
 export class BaseEvent implements BaseEventImpl {
   server_name: string;
@@ -14,11 +12,10 @@ export class BaseEvent implements BaseEventImpl {
   sub_type: string;
   timestamp: number;
   queQiao: QueQiao;
-  api: ConnApi;
+  api: ConnApiImpl;
   serverName: string;
   constructor(
     queQiao: QueQiao,
-    ws: WebSocket,
     serverName: string,
     obj: BaseEventImpl,
   ) {
@@ -31,18 +28,18 @@ export class BaseEvent implements BaseEventImpl {
     this.timestamp = obj.timestamp;
     this.queQiao = queQiao;
     this.api = {
-      broadcast: (message: Entity.TextComponent[]) => this.queQiao.api.broadcast(ws, message),
-      sendActionbar: (message: Entity.TextComponent[]) => this.queQiao.api.sendActionbar(ws, message),
+      broadcast: (message: Entity.TextComponent[]) => this.queQiao.api.broadcast(serverName, message),
+      sendActionbar: (message: Entity.TextComponent[]) => this.queQiao.api.sendActionbar(serverName, message),
       sendPrivateMsg: (message: Entity.TextComponent[], options: { uuid?: string; nickname?: string }) =>
-        this.queQiao.api.sendPrivateMsg(ws, message, options),
-      sendRconCommand: (command: string) => this.queQiao.api.sendRconCommand(ws, command),
+        this.queQiao.api.sendPrivateMsg(serverName, message, options),
+      sendRconCommand: (command: string) => this.queQiao.api.sendRconCommand(serverName, command),
       sendTitle: (options: {
         title?: Entity.TextComponent;
         subtitle?: Entity.TextComponent;
         fade_in?: number;
         stay?: number;
         fade_out?: number;
-      }) => this.queQiao.api.sendTitle(ws, options),
+      }) => this.queQiao.api.sendTitle(serverName, options),
     }
     this.serverName = serverName;
   }

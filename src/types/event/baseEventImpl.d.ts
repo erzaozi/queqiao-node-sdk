@@ -1,6 +1,6 @@
 import WebSocket from 'ws';
 
-import { ConnApi } from '../';
+import type { ConnApiImpl } from '../';
 import { Response } from './response';
 import QueQiao from '../../websocket/queqiao';
 
@@ -13,5 +13,5 @@ export type BaseEventImpl = {
   sub_type: string;
   timestamp: number;
   queQiao: QueQiao;
-  api: ConnApi;
+  api: ConnApiImpl;
 };

@@ -61,17 +61,17 @@ interface ServerOptions {
   readonly authorization?: string;
 }
 
-interface Api<T = Entity.TextComponent> {
-  broadcast: (ws: WebSocket, message: T[]) => Promise<Response>;
-  sendActionbar: (ws: WebSocket, message: T[]) => Promise<Response>;
+interface ApiImpl<T = Entity.TextComponent> {
+  broadcast: (serverName: string, message: T[]) => Promise<Response>;
+  sendActionbar: (serverName: string, message: T[]) => Promise<Response>;
   sendPrivateMsg: (
-    ws: WebSocket,
+    serverName: string,
     message: T[],
     options: { uuid?: string; nickname?: string },
   ) => Promise<Response>;
-  sendRconCommand: (ws: WebSocket, command: string) => Promise<Response>;
+  sendRconCommand: (serverName: string, command: string) => Promise<Response>;
   sendTitle: (
-    ws: WebSocket,
+    serverName: string,
     options: {
       title?: T;
       subtitle?: T;
@@ -82,7 +82,7 @@ interface Api<T = Entity.TextComponent> {
   ) => Promise<Response>;
 }
 
-interface ConnApi<T = Entity.TextComponent> {
+interface ConnApiImpl<T = Entity.TextComponent> {
   broadcast: (message: T[]) => Promise<Response>;
   sendActionbar: (message: T[]) => Promise<Response>;
   sendPrivateMsg: (
@@ -101,4 +101,4 @@ interface ConnApi<T = Entity.TextComponent> {
   ) => Promise<Response>;
 }
 
-export { ConnectOptions, ServerOptions, Api, ConnApi };
+export { ConnectOptions, ServerOptions, ApiImpl, ConnApiImpl };

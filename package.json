@@ -1,6 +1,6 @@
 {
   "name": "queqiao-node-sdk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "queqiao node sdk for manage connection with queqiao server",
   "type": "module",
   "main": "lib/cjs/index.js",

@@ -15,11 +15,10 @@ export class PlayerQuitEvent extends BaseEvent implements PlayerQuitEventImpl {
   player: Player;
   constructor(
     queQiao: QueQiao,
-    ws: WebSocket,
     serverName: string,
     obj: PlayerQuitEventImpl,
   ) {
-    super(queQiao, ws, serverName, obj);
+    super(queQiao, serverName, obj);
     this.player = obj.player;
   }
 }

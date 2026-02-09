@@ -15,11 +15,10 @@ export class PlayerJoinEvent extends BaseEvent implements PlayerJoinEventImpl {
   player: Player;
   constructor(
     queQiao: QueQiao,
-    ws: WebSocket,
     serverName: string,
     obj: PlayerJoinEventImpl,
   ) {
-    super(queQiao, ws, serverName, obj);
+    super(queQiao, serverName, obj);
     this.player = obj.player;
   }
 }

@@ -20,11 +20,10 @@ export class PlayerCommandEvent
   player: Player;
   constructor(
     queQiao: QueQiao,
-    ws: WebSocket,
     serverName: string,
     obj: PlayerCommandEventImpl,
   ) {
-    super(queQiao, ws, serverName, obj);
+    super(queQiao, serverName, obj);
     this.command = obj.command;
     this.message_id = obj.message_id;
     this.raw_message = obj.raw_message;

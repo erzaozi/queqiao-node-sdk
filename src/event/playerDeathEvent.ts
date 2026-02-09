@@ -19,11 +19,10 @@ export class PlayerDeathEvent
   death: Death;
   constructor(
     queQiao: QueQiao,
-    ws: WebSocket,
     serverName: string,
     obj: PlayerDeathEventImpl,
   ) {
-    super(queQiao, ws, serverName, obj);
+    super(queQiao, serverName, obj);
     this.player = obj.player;
     this.death = obj.death;
   }

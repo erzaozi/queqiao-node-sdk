@@ -20,11 +20,10 @@ export class PlayerAchievementEvent
   achievement: Achievement;
   constructor(
     queQiao: QueQiao,
-    ws: WebSocket,
     serverName: string,
     obj: PlayerAchievementEventImpl,
   ) {
-    super(queQiao, ws, serverName, obj);
+    super(queQiao, serverName, obj);
     this.player = obj.player;
     this.achievement = obj.achievement;
   }

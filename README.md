@@ -30,16 +30,16 @@ queqiao.connect({
     url: 'ws://localhost:8080/queqiao',
     authorization: '114514',
 }); // 作为客户端连接鹊桥服务器
-// 如何调用api
-const conn = WebSocketManager.getQueQiaoConnection(serverName);
-conn.api.broadcast(message);
-conn.api.sendActionbar(message);
-conn.api.sendPrivateMsg(message, {nickname: 'steve'});
-conn.api.sendTitle({title: 'Hello World!'});
-conn.api.sendRconCommand(command);
+// 如何调用api，仅需提供服务器名
+queqiao.api.broadcast("Server", message);
+queqiao.api.sendActionbar("Server", message);
+queqiao.api.sendPrivateMsg("Server", message, {nickname: 'steve'});
+queqiao.api.sendTitle("Server", {title: 'Hello World!'});
+queqiao.api.sendRconCommand("Server", command);
 // 同时，注册的事件回调包含api
 const callback = (event) => {
     if (event.event_type === "PlayerChatEvent") {
+        // 此处不需要服务器名
         event.api.sendPrivateMsg({
             text: "我能收到你的消息！",
             type: "text"

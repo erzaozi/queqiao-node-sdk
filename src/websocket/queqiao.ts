@@ -1,7 +1,7 @@
 import WebSocket from 'ws';
 
 import QueQiaoServer from './server.js';
-import api from '../api/index.js';
+import Api from '../api/index.js';
 import { EventEmitter } from './eventEmitter.js';
 import {
   PlayerAchievementEvent,
@@ -12,7 +12,7 @@ import {
   PlayerQuitEvent,
   handleResponse,
 } from '../event/index.js';
-import { ServerOptions, ConnectOptions, Api, ConnApi } from '../types';
+import { ServerOptions, ConnectOptions, ApiImpl, ConnApiImpl } from '../types';
 import { Entity } from '../types';
 import {
   PlayerAchievementEventImpl,
@@ -32,7 +32,7 @@ class QueQiao {
       type: 'inbound' | 'outbound';
       serverName: string;
       ws: WebSocket;
-      api: ConnApi;
+      api: ConnApiImpl<Entity.TextComponent>;
     };
   } = {};
 
@@ -40,7 +40,7 @@ class QueQiao {
   private serverOptions: ServerOptions;
   queQiaoServer: QueQiaoServer | null = null;
   private eventEmitter: EventEmitter;
-  api: Api;
+  api: ApiImpl<Entity.TextComponent>;
 
   constructor(isStartServer: boolean = false, serverOptions?: ServerOptions) {
     this.isStartServer = isStartServer;
@@ -55,11 +55,14 @@ class QueQiao {
     };
     this.wsList = {};
     this.eventEmitter = new EventEmitter();
-    this.api = api;
+    this.api = new Api<Entity.TextComponent>(this);
     this.init();
   }
 
   getConn(serverName: string) {
+    if (!this.wsList[serverName]) {
+      throw new Error('Server name does not exist.');
+    }
     return this.wsList[serverName];
   }
 
@@ -225,18 +228,18 @@ class QueQiao {
       serverName,
       type,
       api: {
-        broadcast: (message: Entity.TextComponent[]) => this.api.broadcast(ws, message),
-        sendActionbar: (message: Entity.TextComponent[]) => this.api.sendActionbar(ws, message),
+        broadcast: (message: Entity.TextComponent[]) => this.api.broadcast(serverName, message),
+        sendActionbar: (message: Entity.TextComponent[]) => this.api.sendActionbar(serverName, message),
         sendPrivateMsg: (message: Entity.TextComponent[], options: { uuid?: string; nickname?: string }) =>
-          this.api.sendPrivateMsg(ws, message, options),
-        sendRconCommand: (command: string) => this.api.sendRconCommand(ws, command),
+          this.api.sendPrivateMsg(serverName, message, options),
+        sendRconCommand: (command: string) => this.api.sendRconCommand(serverName, command),
         sendTitle: (options: {
           title?: Entity.TextComponent;
           subtitle?: Entity.TextComponent;
           fade_in?: number;
           stay?: number;
           fade_out?: number;
-        }) => this.api.sendTitle(ws, options),
+        }) => this.api.sendTitle(serverName, options),
       }
     };
     this.addEventListener(serverName);
@@ -263,7 +266,6 @@ class QueQiao {
                 case 'player_chat':
                   event = new PlayerChatEvent(
                     this,
-                    this.wsList[serverName].ws,
                     serverName,
                     obj as PlayerChatEventImpl,
                   );
@@ -271,7 +273,6 @@ class QueQiao {
                 case 'player_command':
                   event = new PlayerCommandEvent(
                     this,
-                    this.wsList[serverName].ws,
                     serverName,
                     obj as PlayerCommandEventImpl,
                   );
@@ -283,7 +284,6 @@ class QueQiao {
                 case 'player_join':
                   event = new PlayerJoinEvent(
                     this,
-                    this.wsList[serverName].ws,
                     serverName,
                     obj as PlayerJoinEventImpl,
                   );
@@ -291,7 +291,6 @@ class QueQiao {
                 case 'player_quit':
                   event = new PlayerQuitEvent(
                     this,
-                    this.wsList[serverName].ws,
                     serverName,
                     obj as PlayerQuitEventImpl,
                   );
@@ -299,7 +298,6 @@ class QueQiao {
                 case 'player_death':
                   event = new PlayerDeathEvent(
                     this,
-                    this.wsList[serverName].ws,
                     serverName,
                     obj as PlayerDeathEventImpl,
                   );
@@ -307,7 +305,6 @@ class QueQiao {
                 case 'player_achievement':
                   event = new PlayerAchievementEvent(
                     this,
-                    this.wsList[serverName].ws,
                     serverName,
                     obj as PlayerAchievementEventImpl,
                   );
